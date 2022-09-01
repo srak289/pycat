@@ -1,8 +1,8 @@
-from SSHConnection import *
-from SSHConnectionError import *
-from pexpect import TIMEOUT
 import os
-import pdb
+from pexpect import TIMEOUT
+
+from ..ssh import *
+from ..ssh.error import *
 
 class CiscoConnection(SSHConnection):
     def __init__(self, host):

@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-from CiscoModels import *
-from CiscoBase import CiscoBase
-from CiscoSwitch import CiscoSwitch
-from CiscoRouter import CiscoRouter
-from SSHConnectionError import *
-from Logger import Logger
+from .models import *
+from .base import CiscoBase
+from .switch import CiscoSwitch
+from .router import CiscoRouter
+from ..ssh.error import *
+from ..ssh.logger import Logger
 
 import re
 

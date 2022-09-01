@@ -1,10 +1,11 @@
-from dataclasses import dataclass, field
-from CiscoConnection import CiscoConnection
-from CiscoModels import *
-from CiscoBase import CiscoBase
-from SSHConnectionError import *
-from ipaddress import IPv4Address
 import re
+from dataclasses import dataclass, field
+from ipaddress import IPv4Address
+
+from .connection import CiscoConnection
+from .models import *
+from .base import CiscoBase
+from ..ssh.error import *
 
 class CiscoSwitch(CiscoBase):
 
