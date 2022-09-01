@@ -6,6 +6,8 @@ from .connection import CiscoConnection
 from .models import *
 from ..ssh.error import *
 
+class mock(): pass
+
 class CiscoBase:
 
     def __init__(self, host, discover=True):
@@ -13,36 +15,45 @@ class CiscoBase:
             Discovers basic facts about cisco unless specified false.
         '''
         if discover == True:
-            self.Connection = CiscoConnection(host)
+            self._connection = CiscoConnection(host)
             
-            self.Interfaces = []
-            self.IPv4Addresses = []
-            self.Trunks = []
-            self.Neighbors = []
+            self.interfaces = mock()
+            self.ipv4addresses = []
+            self.trunks = mock()
+            self.neighbors = mock()
 
             self._discover_interfaces()
             self._discover_trunks()
             self._discover_cdp()
 
-            self.Connection.close()
+            self._connection.close()
 
         elif discover == 'Neighbors':
-            self.Connection = CiscoConnection(host)
-            self.Neighbors = []
+            self._connection = CiscoConnection(host)
+            self.neighbors = mock()
             self._discover_cdp()
-            self.Connection.close()
+            self._connection.close()
 
         else:
-            self.Connection = CiscoConnection(host)
-            self.Connection.close()
+            self._connection = CiscoConnection(host)
+            self._connection.close()
+
+    def command(self, *args, **kwargs):
+        return self._connection.command(*args, **kwargs)
+
+    def configure(self, *args, **kwargs):
+        return self._connection.configure(*args, **kwargs)
+
+    def control(self):
+        return self._connection.control()
 
     @property
-    def Hostname(self):
-        return self.Connection._hostname.decode('ASCII').replace('#','')
+    def hostname(self):
+        return self._connection._hostname.decode('ASCII').replace('#','')
 
     @property
-    def IPv4Address(self):
-        return self.Connection._host
+    def ipv4address(self):
+        return self._connection._host
         
     def backup(self):
         '''
@@ -69,7 +80,7 @@ class CiscoBase:
             raise NoBackupError(self._host)
 
     def _discover_cdp(self):
-        for i in self.Connection.command('sh cdp neigh det').split('-------------------------'):
+        for i in self._connection.command('sh cdp neigh det').split('-------------------------'):
             kv = {}
             for j in i.split('\r\n'):
                 # need to split on commas here
@@ -83,15 +94,15 @@ class CiscoBase:
                 try:
                     IPv4Address = kv['IPaddress']
                 except KeyError as e:
-                    self.Connection._log.write_log(f'No ip address for CDPNeighbor {Name}', 3)
+                    self._connection._log.write_log(f'No ip address for CDPNeighbor {Name}', 3)
                     IPv4Address = ''
                 Interface = kv['Interface']
                 Platform = kv['Platform']
                 Capabilities = kv['Capabilities']
-                self.Neighbors.append(CDPNeighbor(self.Hostname, Name, IPv4Address, Interface, Platform, Capabilities))
+                self.neighbors.__dict__.update({Name.lower().replace('-','_'):CDPNeighbor(self.hostname, Name, IPv4Address, Interface, Platform, Capabilities)})
 
     def _discover_interfaces(self):
-        for i in self.Connection.command('sh ip int br').split('\r\n'):
+        for i in self._connection.command('sh ip int br').split('\r\n'):
             a = i.split()
             for p in Interface.prefixes:
                 if len(a) > 0:
@@ -107,22 +118,22 @@ class CiscoBase:
                                 break
                         Name, IPv4Address, OK, Method, Status, Protocol = a
                         if IPv4Address != 'unassigned':
-                            self.IPv4Addresses.append(IPv4Address)
+                            self.ipv4addresses.append(IPv4Address)
                         ID = Name[x:]
                         Name = Name[:2]+Name[x:]
-                        self.Interfaces.append(Interface(self.Hostname, Name, IPv4Address, OK, Method, Status, Protocol, ID))
+                        self.interfaces.__dict__.update({Name.lower().replace('/','_'):Interface(self.hostname, Name, IPv4Address, OK, Method, Status, Protocol, ID)})
 
     def _discover_trunks(self):
         t = []
-        for i in self.Connection.command('sh int trunk').split():        
+        for i in self._connection.command('sh int trunk').split():        
             for p in Interface.prefixes:
                 if re.match(str(p)+'.*\d.*$', i) and i not in t:
                     t.append(i)
-        for i in range(len(self.Interfaces)):
-            x = self.Interfaces[i]
+        for k, v in self.interfaces.__dict__.items():
+            x = v
             trunk = []
             if x.Name in t:
-                for d in self.Connection.command(f'sh int trunk | i ^{x.Name} .*$').split(x.Name):
+                for d in self._connection.command(f'sh int trunk | i ^{x.Name} .*$').split(x.Name):
                     for j in d.split('\r\n'):
                         if len(j) > 1:
                             for w in j.split():
@@ -130,19 +141,5 @@ class CiscoBase:
                         elif len(j) > 0:
                             trunk.append(j)
                 Mode, Encapsulation, TrunkStatus, NatVlan, AllVlan, ActVlan, FowVlan = trunk
-                self.Interfaces[i] = Trunk(self.Interfaces[i].Host,
-                                            self.Interfaces[i].Name,
-                                            self.Interfaces[i].IPv4Address,
-                                            self.Interfaces[i].OK,
-                                            self.Interfaces[i].Method,
-                                            self.Interfaces[i].Status,
-                                            self.Interfaces[i].Protocol,
-                                            self.Interfaces[i].ID,
-                                            Mode,
-                                            Encapsulation,
-                                            TrunkStatus,
-                                            NatVlan,
-                                            AllVlan,
-                                            ActVlan,
-                                            FowVlan)
-                self.Trunks.append(self.Interfaces[i])
+                self.interfaces.__dict__.update({k:Trunk(*[o for y,o in v.__dict__.items()], Mode, Encapsulation, TrunkStatus, NatVlan, AllVlan, ActVlan, FowVlan)})
+                self.trunks.__dict__.update({v.Name.lower().replace('/','_'):v})

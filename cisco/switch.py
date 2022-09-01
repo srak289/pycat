@@ -16,28 +16,28 @@ class CiscoSwitch(CiscoBase):
         self.AAASessions = []
 
         if discover:
-            self.Connection.connect()
+            self._connection.connect()
 
             self._discover_vlans()
             self._discover_auth_sess()
 
-            self.Connection.close()
+            self._connection.close()
 
     def _discover_auth_sess(self):
             # This is so that the switches without dot1x don't crash the discovery
             # We'll make this better..maybe
         s = 'dot1x system-auth-control'
-        if not re.search(s,self.Connection.command(f'sh run | i {s}')):
+        if not re.search(s,self._connection.command(f'sh run | i {s}')):
             return
 
-        for i in self.Connection.command('sh auth sess | i Gi*').split('\r\n'):
+        for i in self._connection.command('sh auth sess | i Gi*').split('\r\n'):
             if len(i.split()) == 6:
                 Interface, MACAddress, Method, Domain, Status, SessionID = i.split()
-                self.AAASessions.append(AAASession(self.Hostname, Interface, MACAddress, Method, Domain, Status, SessionID))
+                self.AAASessions.append(AAASession(self.hostname, Interface, MACAddress, Method, Domain, Status, SessionID))
 
     def _discover_vlans(self):
         res = []
-        for i in self.Connection.command('sh vlan br').split('VLAN Name                             Status    Ports\r\n---- -------------------------------- --------- -------------------------------'):
+        for i in self._connection.command('sh vlan br').split('VLAN Name                             Status    Ports\r\n---- -------------------------------- --------- -------------------------------'):
             for k in i.split('\r\n'):
                 for x in k.split(','):
                     for s in x.split(' '): 
@@ -78,12 +78,12 @@ class CiscoSwitch(CiscoBase):
                 vlan.append('')
             Name, ID, Status, Interfaces = vlan[0], vlan[1], vlan[2], vlan[3:]
 
-            self.Vlans.append(Vlan(self.Hostname, Name, ID, Status, Interfaces))
+            self.Vlans.append(Vlan(self.hostname, Name, ID, Status, Interfaces))
 
     def _discover_mac_addrs(self):
         for i in self.Interfaces:
             if i is not Trunk and i.Status == 'up':
-                for x in self.Connection.command(f'sh mac add | i {i.Name} ').split('\r\n'):
+                for x in self._connection.command(f'sh mac add | i {i.Name} ').split('\r\n'):
                     print(x)
 
     def _is_integer(self, n):
