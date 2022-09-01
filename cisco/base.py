@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass, field
 from typing import List
 
-from .connection import CiscoConnection
+from .connection import *
 from .models import *
 from ..ssh.error import *
 
@@ -10,12 +10,16 @@ class mock(): pass
 
 class CiscoBase:
 
-    def __init__(self, host, discover=True):
+    def __init__(self, host, discover=True, rescue=False):
         '''
             Discovers basic facts about cisco unless specified false.
         '''
-        if discover == True:
+        if rescue:
+            self._connection = CiscoRescueConnection(host)
+        else:
             self._connection = CiscoConnection(host)
+
+        if discover == True:
             
             self.interfaces = mock()
             self.ipv4addresses = []
@@ -29,13 +33,11 @@ class CiscoBase:
             self._connection.close()
 
         elif discover == 'Neighbors':
-            self._connection = CiscoConnection(host)
             self.neighbors = mock()
             self._discover_cdp()
             self._connection.close()
 
         else:
-            self._connection = CiscoConnection(host)
             self._connection.close()
 
     def command(self, *args, **kwargs):

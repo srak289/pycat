@@ -1,5 +1,5 @@
 from .base import CiscoBase
-from .connection import CiscoConnection
+from .connection import *
 from .models import *
 from .network import CiscoNetwork
 from .router import CiscoRouter

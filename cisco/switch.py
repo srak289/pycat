@@ -2,15 +2,14 @@ import re
 from dataclasses import dataclass, field
 from ipaddress import IPv4Address
 
-from .connection import CiscoConnection
 from .models import *
 from .base import CiscoBase
 from ..ssh.error import *
 
 class CiscoSwitch(CiscoBase):
 
-    def __init__(self, host, discover=True):
-        super().__init__(host, discover) 
+    def __init__(self, host, discover=True, rescue=False):
+        super().__init__(host, discover, rescue) 
 
         self.Vlans = []
         self.AAASessions = []

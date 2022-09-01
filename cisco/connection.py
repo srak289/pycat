@@ -5,15 +5,21 @@ from ..ssh import *
 from ..ssh.error import *
 
 class CiscoConnection(SSHConnection):
-    def __init__(self, host):
+    def __init__(self, host, **kwargs):
         pw = None
 
         path = os.path.abspath(os.path.dirname(__file__))
         
-        with open(os.path.join(path, '.ciscopw'),'r') as f:
-            pw = f.read()
+        if 'user' in kwargs:
+            user = kwargs.pop('user')
+        else:
+            user = "zack.allen.oa"
 
-        user = "zack.allen.oa"
+        if 'pw' in kwargs:
+            pw = kwargs.pop('pw')
+        else:
+            with open(os.path.join(path, '.ciscopw'),'r') as f:
+                pw = f.read()
  
         super().__init__(host, user, pw, '^.*#.*$', True, 4)
         del(pw)
@@ -215,3 +221,13 @@ class CiscoConnection(SSHConnection):
 
     def __repr__(self):
         return f'CiscoConnection("{self._host}")'
+
+class CiscoRescueConnection(CiscoConnection):
+    def __init__(self, host):
+        user = "imb"
+        pw = "MXFhelhTV0AzZWRjVkZSJAo="
+ 
+        super().__init__(host, user=user, pw=pw)
+
+__all__ = ['CiscoConnection', 'CiscoRescueConnection']
+
