@@ -6,13 +6,15 @@ from .models import *
 from .base import CiscoBase
 from ..ssh.error import *
 
+class mock(): pass
+
 class CiscoSwitch(CiscoBase):
 
     def __init__(self, host, discover=True, rescue=False):
         super().__init__(host, discover, rescue) 
 
-        self.Vlans = []
-        self.AAASessions = []
+        self.vlans = mock()
+        self.aaasessions = mock()
 
         if discover:
             self._connection.connect()
@@ -32,7 +34,7 @@ class CiscoSwitch(CiscoBase):
         for i in self._connection.command('sh auth sess | i Gi*').split('\r\n'):
             if len(i.split()) == 6:
                 Interface, MACAddress, Method, Domain, Status, SessionID = i.split()
-                self.AAASessions.append(AAASession(self.hostname, Interface, MACAddress, Method, Domain, Status, SessionID))
+                self.aaasessions.__dict__.update({Interface.lower().replace("/","_")+'_'+Domain.lower():AAASession(self.hostname, Interface, MACAddress, Method, Domain, Status, SessionID)})
 
     def _discover_vlans(self):
         res = []
@@ -75,9 +77,9 @@ class CiscoSwitch(CiscoBase):
                 break;
             elif len(vlan) < 4:   
                 vlan.append('')
-            Name, ID, Status, Interfaces = vlan[0], vlan[1], vlan[2], vlan[3:]
+            ID, Name, Status, Interfaces = vlan[0], vlan[1].strip(), vlan[2], vlan[3:]
 
-            self.Vlans.append(Vlan(self.hostname, Name, ID, Status, Interfaces))
+            self.vlans.__dict__.update({Name.lower():Vlan(self.hostname, Name, ID, Status, Interfaces)})
 
     def _discover_mac_addrs(self):
         for i in self.Interfaces:
