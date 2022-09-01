@@ -1,0 +1,4 @@
+.ciscopw
+.esxpw
+*.sw*
+__pycache__
