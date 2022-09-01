@@ -92,10 +92,12 @@ class Trunk(Interface):
 
 #CDPNeighbor: CDPNeighbor
 
+class mock(): pass
+
 @dataclass
 class Vlan():
     host: str
     name: str
     id: str
     status: str
-    interfaces: str
+    interfaces: mock

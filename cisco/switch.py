@@ -1,3 +1,4 @@
+import pdb
 import re
 from dataclasses import dataclass, field
 from ipaddress import IPv4Address
@@ -79,7 +80,13 @@ class CiscoSwitch(CiscoBase):
                 vlan.append('')
             ID, Name, Status, Interfaces = vlan[0], vlan[1].strip(), vlan[2], vlan[3:]
 
-            self.vlans.__dict__.update({Name.lower():Vlan(self.hostname, Name, ID, Status, Interfaces)})
+            xx = mock()
+            for i in Interfaces:
+                i = i.lower().replace('-','_').replace('/','_')
+                if i in self.interfaces.__dict__.keys():
+                    xx.__dict__.update({i:self.interfaces.__dict__[i]})
+
+            self.vlans.__dict__.update({Name.lower().replace('-','_').replace(' ','_'):Vlan(self.hostname, Name, ID, Status, xx)})
 
     def _discover_mac_addrs(self):
         for i in self.Interfaces:
