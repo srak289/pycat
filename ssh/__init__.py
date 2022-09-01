@@ -1,10 +1,11 @@
+import re, os
 from pexpect import *
 from base64 import b64decode
 from ipaddress import *
 from socket import *
-from SSHConnectionError import *
-from Logger import Logger
-import re, os
+
+from .error import *
+from .logger import Logger
 
 class SSHConnection:
     def __init__(self, host, user, passwd, prompt, log=False, verbosity=0):
