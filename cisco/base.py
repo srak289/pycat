@@ -132,8 +132,8 @@ class CiscoBase:
         for k, v in self.interfaces.__dict__.items():
             x = v
             trunk = []
-            if x.Name in t:
-                for d in self._connection.command(f'sh int trunk | i ^{x.Name} .*$').split(x.Name):
+            if x.name in t:
+                for d in self._connection.command(f'sh int trunk | i ^{x.name} .*$').split(x.name):
                     for j in d.split('\r\n'):
                         if len(j) > 1:
                             for w in j.split():
@@ -142,4 +142,4 @@ class CiscoBase:
                             trunk.append(j)
                 Mode, Encapsulation, TrunkStatus, NatVlan, AllVlan, ActVlan, FowVlan = trunk
                 self.interfaces.__dict__.update({k:Trunk(*[o for y,o in v.__dict__.items()], Mode, Encapsulation, TrunkStatus, NatVlan, AllVlan, ActVlan, FowVlan)})
-                self.trunks.__dict__.update({v.Name.lower().replace('/','_'):v})
+                self.trunks.__dict__.update({v.name.lower().replace('/','_'):v})

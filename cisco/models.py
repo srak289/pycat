@@ -4,32 +4,32 @@ from typing import List
 
 @dataclass
 class AAASession():
-    Host: str
-    Interface: str
-    MACAddress: str
-    Method: str
-    Domain: str
-    Status: str
-    SessionID: str
+    host: str
+    interface: str
+    macaddress: str
+    method: str
+    domain: str
+    status: str
+    sessionid: str
 
 @dataclass
 class CDPNeighbor():
-    Host: str
-    Name: str
-    IPv4Address: str
-    Interface: str
-    Platform: str
-    Capabilities: str
+    host: str
+    name: str
+    ipv4address: str
+    interface: str
+    platform: str
+    capabilities: str
 
 @dataclass
 class OSPFNeighbor():
-    Host: str
-    NeighborID: str
-    Priority: str
-    State: str
-    DeadTime: str
-    IPv4Address: str
-    Interface: str
+    host: str
+    neighborid: str
+    priority: str
+    state: str
+    deadtime: str
+    ipv4address: str
+    interface: str
 
 @dataclass
 class CiscoPhone(CDPNeighbor):
@@ -50,14 +50,14 @@ class CiscoWLANController(CDPNeighbor):
 
 @dataclass
 class Interface():
-    Host: str
-    Name: str
-    IPv4Address: str
-    OK: str
-    Method: str
-    Status: str
-    Protocol: str
-    ID: str
+    host: str
+    name: str
+    ipv4address: str
+    ok: str
+    method: str
+    status: str
+    protocol: str
+    id: str
 #    Vlan: List(Vlan)
 
     prefixes = [
@@ -82,20 +82,20 @@ class AccessPort(Interface):
 
 @dataclass
 class Trunk(Interface):
-    Mode: str
-    Encapsulation: str
-    TrunkStatus: str
-    NatVlan: str
-    AllVlan: str
-    ActVlan: str
-    FowVlan: str
+    mode: str
+    encapsulation: str
+    trunkstatus: str
+    natvlan: str
+    allvlan: str
+    actvlan: str
+    fowvlan: str
 
 #CDPNeighbor: CDPNeighbor
 
 @dataclass
 class Vlan():
-    Host: str
-    Name: str
-    ID: str
-    Status: str
-    Interfaces: str
+    host: str
+    name: str
+    id: str
+    status: str
+    interfaces: str
