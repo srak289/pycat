@@ -2,6 +2,21 @@ from dataclasses import dataclass
 from ipaddress import IPv4Address
 from typing import List
 
+class mock():
+
+    def get(self, k):
+        if k in self.__dict__.keys():
+            return self.__dict__[k]
+        else:
+            raise KeyError(f'{self} has no attribute {k}')
+
+    def __iter__(self):
+        for x in self.__dict__.values():
+            yield x
+
+    def __repr__(self):
+        return f"[{', '.join([x for x in self.__dict__.keys()])}]"
+
 @dataclass
 class AAASession():
     host: str
@@ -58,7 +73,7 @@ class Interface():
     status: str
     protocol: str
     id: str
-#    Vlan: List(Vlan)
+    vlan: mock
 
     prefixes = [
             '^Vl.*',
@@ -91,8 +106,6 @@ class Trunk(Interface):
     fowvlan: str
 
 #CDPNeighbor: CDPNeighbor
-
-class mock(): pass
 
 @dataclass
 class Vlan():

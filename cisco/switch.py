@@ -7,8 +7,6 @@ from .models import *
 from .base import CiscoBase
 from ..ssh.error import *
 
-class mock(): pass
-
 class CiscoSwitch(CiscoBase):
 
     def __init__(self, host, discover=True, rescue=False):
@@ -87,6 +85,10 @@ class CiscoSwitch(CiscoBase):
                     xx.__dict__.update({i:self.interfaces.__dict__[i]})
 
             self.vlans.__dict__.update({Name.lower().replace('-','_').replace(' ','_'):Vlan(self.hostname, Name, ID, Status, xx)})
+
+            for k in self.vlans.__dict__.keys():
+                for i in self.vlans.__dict__[k].interfaces.__dict__.keys():
+                    self.interfaces.__dict__[i].vlan = self.vlans.__dict__[k]
 
     def _discover_mac_addrs(self):
         for i in self.Interfaces:

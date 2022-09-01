@@ -6,8 +6,6 @@ from .connection import *
 from .models import *
 from ..ssh.error import *
 
-class mock(): pass
-
 class CiscoBase:
 
     def __init__(self, host, discover=True, rescue=False):
@@ -123,7 +121,7 @@ class CiscoBase:
                             self.ipv4addresses.append(IPv4Address)
                         ID = Name[x:]
                         Name = Name[:2]+Name[x:]
-                        self.interfaces.__dict__.update({Name.lower().replace('/','_'):Interface(self.hostname, Name, IPv4Address, OK, Method, Status, Protocol, ID)})
+                        self.interfaces.__dict__.update({Name.lower().replace('/','_'):Interface(self.hostname, Name, IPv4Address, OK, Method, Status, Protocol, ID, mock())})
 
     def _discover_trunks(self):
         t = []
