@@ -10,6 +10,12 @@ class mock():
         else:
             raise KeyError(f'{self} has no attribute {k}')
 
+    def __getattr__(self, attr):
+        if attr in self.__dict__.keys():
+            return self.__dict__[k]
+        else:
+            return None
+
     def __iter__(self):
         for x in self.__dict__.values():
             yield x
@@ -104,8 +110,6 @@ class Trunk(Interface):
     allvlan: str
     actvlan: str
     fowvlan: str
-
-#CDPNeighbor: CDPNeighbor
 
 @dataclass
 class Vlan():

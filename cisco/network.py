@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+import re
 
 from .models import *
 from .base import CiscoBase
@@ -6,8 +6,6 @@ from .switch import CiscoSwitch
 from .router import CiscoRouter
 from ..ssh.error import *
 from ..ssh.logger import Logger
-
-import re
 
 class CiscoNetwork:
 

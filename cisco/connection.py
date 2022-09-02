@@ -13,7 +13,7 @@ class CiscoConnection(SSHConnection):
         if 'user' in kwargs:
             user = kwargs.pop('user')
         else:
-            user = "zack.allen.oa"
+            user = ""
 
         if 'pw' in kwargs:
             pw = kwargs.pop('pw')

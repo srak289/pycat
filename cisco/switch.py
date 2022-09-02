@@ -1,16 +1,16 @@
-import pdb
 import re
 from dataclasses import dataclass, field
 from ipaddress import IPv4Address
 
 from .models import *
 from .base import CiscoBase
+from .utils import attr_name
 from ..ssh.error import *
 
 class CiscoSwitch(CiscoBase):
 
-    def __init__(self, host, discover=True, rescue=False):
-        super().__init__(host, discover, rescue) 
+    def __init__(self, host, **kwargs):
+        super().__init__(host, **kwargs) 
 
         self.vlans = mock()
         self.aaasessions = mock()
@@ -24,16 +24,16 @@ class CiscoSwitch(CiscoBase):
             self._connection.close()
 
     def _discover_auth_sess(self):
-            # This is so that the switches without dot1x don't crash the discovery
-            # We'll make this better..maybe
+        # This is so that the switches without dot1x don't crash the discovery
+        # We'll make this better..maybe
         s = 'dot1x system-auth-control'
-        if not re.search(s,self._connection.command(f'sh run | i {s}')):
+        if not re.search(s, self._connection.command(f'sh run | i {s}')):
             return
 
         for i in self._connection.command('sh auth sess | i Gi*').split('\r\n'):
-            if len(i.split()) == 6:
-                Interface, MACAddress, Method, Domain, Status, SessionID = i.split()
-                self.aaasessions.__dict__.update({Interface.lower().replace("/","_")+'_'+Domain.lower():AAASession(self.hostname, Interface, MACAddress, Method, Domain, Status, SessionID)})
+            t = i.split()
+            if len(t) == 6:
+                setattr(self.aaasessions, attr_name(t[0]), AAASession(self.hostname, *[ x for x in t ]))
 
     def _discover_vlans(self):
         res = []
@@ -50,6 +50,7 @@ class CiscoSwitch(CiscoBase):
         construct = False
         for i in res:
             # Find the vlan number, it is the first item that can be cast to integer
+            # TODO: Optimize
             if self._is_integer(i):
                 if construct:
                     vlans.append(vlan)
@@ -80,18 +81,17 @@ class CiscoSwitch(CiscoBase):
 
             xx = mock()
             for i in Interfaces:
-                i = i.lower().replace('-','_').replace('/','_')
-                if i in self.interfaces.__dict__.keys():
-                    xx.__dict__.update({i:self.interfaces.__dict__[i]})
-
-            self.vlans.__dict__.update({Name.lower().replace('-','_').replace(' ','_'):Vlan(self.hostname, Name, ID, Status, xx)})
+                i = attr_name(i)
+                if hasattr(self.interfaces, i):
+                    setattr(xx, i, getattr(self.interfaces, i))
+            setattr(self.vlans, attr_name(Name), Vlan(self.hostname, Name, ID, Status, xx))
 
             for k in self.vlans.__dict__.keys():
                 for i in self.vlans.__dict__[k].interfaces.__dict__.keys():
                     self.interfaces.__dict__[i].vlan = self.vlans.__dict__[k]
 
     def _discover_mac_addrs(self):
-        for i in self.Interfaces:
+        for i in self.interfaces:
             if i is not Trunk and i.Status == 'up':
                 for x in self._connection.command(f'sh mac add | i {i.Name} ').split('\r\n'):
                     print(x)
@@ -103,5 +103,5 @@ class CiscoSwitch(CiscoBase):
         try:
             int(n)
         except ValueError:
-                return False
+            return False
         return True

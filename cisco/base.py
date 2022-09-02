@@ -4,37 +4,44 @@ from typing import List
 
 from .connection import *
 from .models import *
+from .utils import attr_name
 from ..ssh.error import *
 
 class CiscoBase:
 
-    def __init__(self, host, discover=True, rescue=False):
+    def __init__(self, host, **kwargs):
         '''
             Discovers basic facts about cisco unless specified false.
         '''
-        if rescue:
+        allkw = ['_discover', '_rescue']
+
+        for k in allkw:
+            if k in kwargs:
+                setattr(self, kwargs.pop(k))
+
+        if hasattr(self, '_rescue'):
             self._connection = CiscoRescueConnection(host)
         else:
             self._connection = CiscoConnection(host)
 
-        if discover == True:
+        if hasattr(self, '_discover'):
             
-            self.interfaces = mock()
-            self.ipv4addresses = []
-            self.trunks = mock()
-            self.neighbors = mock()
+            if self._discover == True:
+                self.interfaces = mock()
+                self.ipv4addresses = []
+                self.trunks = mock()
+                self.neighbors = mock()
 
-            self._discover_interfaces()
-            self._discover_trunks()
-            self._discover_cdp()
+                self._discover_interfaces()
+                self._discover_trunks()
+                self._discover_cdp()
 
-            self._connection.close()
+                self._connection.close()
 
-        elif discover == 'Neighbors':
-            self.neighbors = mock()
-            self._discover_cdp()
-            self._connection.close()
-
+            elif self._discover == 'Neighbors':
+                self.neighbors = mock()
+                self._discover_cdp()
+                self._connection.close()
         else:
             self._connection.close()
 
@@ -141,5 +148,6 @@ class CiscoBase:
                         elif len(j) > 0:
                             trunk.append(j)
                 Mode, Encapsulation, TrunkStatus, NatVlan, AllVlan, ActVlan, FowVlan = trunk
-                self.interfaces.__dict__.update({k:Trunk(*[o for y,o in v.__dict__.items()], Mode, Encapsulation, TrunkStatus, NatVlan, AllVlan, ActVlan, FowVlan)})
-                self.trunks.__dict__.update({v.name.lower().replace('/','_'):v})
+                t = Trunk(*[o for o in v.__dict__.values()], Mode, Encapsulation, TrunkStatus, NatVlan, AllVlan, ActVlan, FowVlan)
+                self.interfaces.__dict__.update({k:t})
+                self.trunks.__dict__.update({v.name.lower().replace('/','_'):t})
