@@ -5,7 +5,7 @@ from .base import CiscoBase
 from .switch import CiscoSwitch
 from .router import CiscoRouter
 from ..ssh.error import *
-from ..ssh.logger import Logger
+from ..ssh.log import Logger
 
 class CiscoNetwork:
 

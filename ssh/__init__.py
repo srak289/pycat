@@ -5,7 +5,7 @@ from ipaddress import *
 from socket import *
 
 from .error import *
-from .logger import Logger
+from .log import Logger
 
 class SSHConnection:
     def __init__(self, host, user, passwd, prompt, log=False, verbosity=0):

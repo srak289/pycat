@@ -38,8 +38,6 @@ class CiscoConnection(SSHConnection):
             "end"
         )
 
-# Unable to negotiate with 55.35.2.1 port 22: no matching key exchange method found. Their offer: diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1
-
     def command(self, cmd):
         '''
             This method is for retreiving information from the connection. It will automatically page
